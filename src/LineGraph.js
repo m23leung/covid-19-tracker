@@ -54,6 +54,8 @@ function LineGraph( {casesType, ...props}) {
 
     console.log("CASES TYPE: ", casesType)
     const [data, setData] = useState({});
+    const [lineColor, setLineColor] = useState("red");
+
 
     const getChartData = (data, casesType) => {
         const chartData = [];
@@ -81,7 +83,11 @@ function LineGraph( {casesType, ...props}) {
              
                 const chartData = getChartData(data, casesType);
                 setData(chartData);
-                
+                if (casesType === 'recovered') {
+                    setLineColor("lightgreen");
+                } else {
+                    setLineColor("rgba(204, 16, 52, 0.5)");
+                }
             })
         )
         fetchData();
@@ -94,7 +100,7 @@ function LineGraph( {casesType, ...props}) {
                 options = {options}
                 data={{
                     datasets: [{
-                        backgroundColor: "rgba(204, 16, 52, 0.5)",
+                        backgroundColor: lineColor,
                         borderColor: "#CC1034",
                         data: data }]
             }} />
