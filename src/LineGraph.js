@@ -52,10 +52,8 @@ const options = {
 
 function LineGraph( {casesType, ...props}) {
 
-    console.log("CASES TYPE: ", casesType)
     const [data, setData] = useState({});
     const [lineColor, setLineColor] = useState("red");
-
 
     const getChartData = (data, casesType) => {
         const chartData = [];

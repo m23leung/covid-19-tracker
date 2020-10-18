@@ -8,6 +8,8 @@
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "chart.js": "^2.9.3",
+    "country-code-lookup": "0.0.18",
+    "jquery": "^3.5.1",
     "leaflet": "^1.7.1",
     "numeral": "^2.0.6",
     "react": "^16.14.0",
