@@ -1,3 +1,5 @@
+COVID-19 TRACKER
+
 Author: Mark Leung
 
 Live Demo URL:
