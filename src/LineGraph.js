@@ -1,6 +1,5 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import './css/LineGraph.css';
 import { useState, useEffect } from 'react';
 import numeral from "numeral";
 
@@ -50,15 +49,17 @@ const options = {
     }
 }
 
-function LineGraph( {casesType, ...props}) {
+function LineGraph( {casesType, country}) {
 
     const [data, setData] = useState({});
     const [lineColor, setLineColor] = useState("red");
 
-    const getChartData = (data, casesType) => {
+    const getChartData = (data, casesType, country) => {
         const chartData = [];
         let lastDataPoint;
-
+        if (!country) return;
+        console.log("COUNTRY: ", country)
+        //debugger;
         for (let date in data.cases) {
             if (lastDataPoint) {
                 const newDataPoint = {
@@ -74,12 +75,51 @@ function LineGraph( {casesType, ...props}) {
     }
 
     useEffect(() => {
+        
+        let url = 'https://disease.sh/v3/covid-19/historical/all?lastdays=120';
+
         const fetchData = async () => (
-            await fetch('https://disease.sh/v3/covid-19/historical/all?lastdays=120')
+            
+            await fetch(url)
             .then(response => response.json())
             .then(data => {
-             
-                const chartData = getChartData(data, casesType);
+                console.log("TIME DATA: ", data);
+    
+                const chartData = getChartData(data, casesType, country);
+
+                console.log("CHART DATA", chartData);
+                setData(chartData);
+                if (casesType === 'recovered') {
+                    setLineColor("lightgreen");
+                } else if (casesType === 'deaths') {
+                    setLineColor("purple");
+                } else {
+                    setLineColor("rgba(204, 16, 52, 0.5)");
+                }
+            })
+        )
+        fetchData();
+    }, [casesType]);
+
+    useEffect(() => {   
+        
+        if (country === 'Worldwide') return;
+
+        let url = `https://disease.sh/v3/covid-19/historical/${country}?lastdays=120`;
+ 
+        const fetchData = async () => (
+            
+            await fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log("TIME DATA: ", data);
+                
+                debugger;
+                data = data.timeline;
+
+                const chartData = getChartData(data, casesType, country);
+
+                console.log("CHART DATA", chartData);
                 setData(chartData);
                 if (casesType === 'recovered') {
                     setLineColor("lightgreen");
@@ -89,10 +129,11 @@ function LineGraph( {casesType, ...props}) {
             })
         )
         fetchData();
-    }, [casesType]);
+    }, [country]);
+
 
     return (
-        <div className={props.className}>
+        <div>
             {data?.length > 0 && (
             <Line 
                 options = {options}

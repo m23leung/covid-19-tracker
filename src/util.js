@@ -1,5 +1,6 @@
 import React from "react";
 import numeral from "numeral";
+
 import { Circle, Popup } from "react-leaflet";
 
 const casesTypeColors = {
@@ -16,7 +17,7 @@ const casesTypeColors = {
       multiplier: 1200,
     },
     deaths: {
-      hex: "#fb4443",
+      hex: "purple",
       rgb: "rgb(251, 68, 67)",
       half_op: "rgba(251, 68, 67, 0.5)",
       multiplier: 2000,
@@ -33,7 +34,6 @@ export const sortData = (data) => {
 export const prettyPrintStat = (stat) => 
  stat ? `+${numeral(stat).format("0.0a")}` : "+0";
  
-
 // Circles will be drawn on map with tooltip
 export const showDataOnMap = (data, casesType='cases') => (
 
@@ -49,22 +49,22 @@ export const showDataOnMap = (data, casesType='cases') => (
         >
         
         <Popup>
-        <div className="info-container">
-          <div
-            className="info-flag"
-            style={{ backgroundImage: `url(${country.countryInfo.flag})` }}
-          ></div>
-          <div className="info-name">{country.country}</div>
-          <div className="info-confirmed">
-            Cases: {numeral(country.cases).format("0,0")}
+          <div className="info-container">
+            <div
+              className="info-flag"
+              style={{ backgroundImage: `url(${country.countryInfo.flag})` }}
+            ></div>
+            <div className="info-name">{country.country}</div>
+            <div className="info-confirmed">
+              Cases: {numeral(country.cases).format("0,0")}
+            </div>
+            <div className="info-recovered">
+              Recovered: {numeral(country.recovered).format("0,0")}
+            </div>
+            <div className="info-deaths">
+              Deaths: {numeral(country.deaths).format("0,0")}
+            </div>
           </div>
-          <div className="info-recovered">
-            Recovered: {numeral(country.recovered).format("0,0")}
-          </div>
-          <div className="info-deaths">
-            Deaths: {numeral(country.deaths).format("0,0")}
-          </div>
-        </div>
       </Popup>
         </Circle>
     )

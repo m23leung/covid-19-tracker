@@ -29,6 +29,14 @@
     border-color: red;
 }
 
+.infoBox--purple {
+    border-top: 10px solid purple;
+}
+
 .infoBox__cases--green {
     color: lightgreen !important;
+}
+
+.infoBox__cases--purple {
+    color: purple !important;
 }

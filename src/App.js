@@ -6,7 +6,6 @@ import Map from './Map';
 import Table from './Table';
 import LineGraph from './LineGraph';
 import { sortData, prettyPrintStat } from './util';
-import $ from 'jquery'; 
 import "leaflet/dist/leaflet.css";
 import './css/App.css';
 
@@ -17,14 +16,17 @@ function App() {
   const [country, setCountry] = useState(allCountries);
   const [countryInfo, setCountryInfo] = useState({});
   const [tableData, setTableData] = useState([]);
+
   const [mapCenter, setMapCenter] = useState([ 34.80746, -40.4796 ]);
   const [mapZoom, setMapZoom] = useState(3);
   const [mapCountries, setMapCountries] = useState([]);
   const [casesType, setCasesType] = useState("cases");
+  
   const lookup = require('country-code-lookup')
 
 
   // Initial load
+  /*
   useEffect(() => {
     const url = "https://disease.sh/v3/covid-19/all" 
 
@@ -36,32 +38,12 @@ function App() {
     setCountryInfo(data);
     })
   }, []);
+  */
 
   // Initialize the country dropdown
   useEffect(() => {
     // async -> send a request, then wait for it. Do something with
     // the returned info
-
-    /*
-    const getCountriesData = async () => {
-      await fetch("https://disease.sh/v3/covid-19/countries")
-        .then((response) => response.json())
-        .then((data) => {
-          const countries = data.map((country) => ({
-            name: country.country, // Ex: United States
-            value: country.countryInfo.iso2 // Ex: USA
-          }));
-
-          const sortedData = sortData(data);
-          setTableData(sortedData);
-          setMapCountries(data);
-          setCountries(countries);
-
-        })
-    }
-
-    getCountriesData();
-*/
   
     const getCountryData = async () => {
       await fetch("https://disease.sh/v3/covid-19/countries")
@@ -80,18 +62,7 @@ function App() {
         })
     }
 
-    getCountryData();
-
-    const defaultLocation = () => {
-      /*
-      if (window.navigator.geolocation) {
-        window.navigator.geolocation
-        .getCurrentPosition((location) => { 
-          setMapCenter([location.coords.latitude, location.coords.longitude])
-          setMapZoom(3);
-        }, console.log);
-       } 
-       */
+    const setDefaultLocation = () => {
 
        fetch('https://extreme-ip-lookup.com/json/')
        .then( res => res.json())
@@ -102,18 +73,17 @@ function App() {
            const countryCode = lookup.byCountry(response.country).iso2;
            setCountry(countryCode);
            updateData(countryCode);
-
         })
         .catch((data, status) => {
            console.log('Request failed');
         })
-
     }
 
-    
+    // Get Global Country Data
+    getCountryData();
 
-    console.log("DID WE GET HERE");
-    defaultLocation();
+    // Set the current location
+    setDefaultLocation();
 
   }, []);
 
@@ -130,38 +100,29 @@ function App() {
       // Set the selected country data from the API
 
       setCountry(countryCode);
+      console.log(data);
       setCountryInfo(data);
       setMapZoom(3);
-
+      
       if ( countryCode === allCountries ) {
        setMapCenter([34.80746, -40.4796])
        return;
       }
       else { 
         setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
+        setMapZoom(4);
       }    
   }
     )}
 
   const onCountrySelect = async (event) => {
-    const countryCode = event.target.value;
-
-    updateData(countryCode);
-                    
-    console.log("DID WE GET HERE");
-    const url_timeData = `https://disease.sh/v3/covid-19/historical/${countryCode}`;
     
-    await fetch(url_timeData)
-    .then(response => response.json())
-    .then(data => {
-
-      // TODO: Set the selected country data from the API for mapping purposes
-      //setCountryData
+    const countryCode = event.target.value;
   
-    })    
+    //alert($("Select:MenuItem").text());
+    updateData(countryCode);
 
   }
-  console.log("COUNTRY INFO >>>", countryInfo)
 
   return (
     <div className="app">
@@ -174,7 +135,8 @@ function App() {
             <Select
               variant="outlined"
               value={country}    
-              onChange={onCountrySelect}        
+              onChange={onCountrySelect}    
+              id="appDropdown"    
             >
             <MenuItem value={allCountries}>{allCountries}</MenuItem>
           
@@ -193,14 +155,23 @@ function App() {
             <InfoBox 
             active={casesType === "recovered"} onClick={ e => setCasesType('recovered')}  title="Daily Recovered" total={prettyPrintStat(countryInfo.recovered)} cases={prettyPrintStat(countryInfo.todayRecovered)} />
             <InfoBox 
-            isRed
-            active={casesType === "deaths"} onClick={ e => setCasesType('deaths')}  title="Daily Deaths" total={prettyPrintStat(countryInfo.deaths)} cases={prettyPrintStat(countryInfo.todayDeaths)} />
+            isPurple
+            active={casesType === "deaths"}
+             onClick={ e => setCasesType('deaths')}  title="Daily Deaths" total={prettyPrintStat(countryInfo.deaths)} cases={prettyPrintStat(countryInfo.todayDeaths)} />
           </div>  
           
           <Map casesType={casesType} 
                countries={mapCountries} 
+               country={country}
                center={mapCenter} 
                zoom={mapZoom}/>
+
+            <Card className="app__bottom">
+              <CardContent>
+                <h3 className="app__graphTitle"><strong> {country} - Daily {casesType}</strong></h3>
+                <LineGraph className="app_graph" casesType={casesType} country={country}/>
+              </CardContent>
+            </Card>
 
       </div>
    

@@ -27,6 +27,14 @@ body {
   justify-content: space-between;
 }
 
+.app__bottom {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 20px;
+  margin-top: 16px;
+  box-shadow: 0 0 8px -4px rgba(0,0,0,0.5);
+}
+
 .app__left {
   flex: 0.9;
 }
