@@ -1,5 +1,7 @@
 COVID-19 TRACKER
 
+Description: Displays the latest worldwide COVID-19 numbers with statistical data including grpahs, tables, and region map
+
 Author: Mark Leung
 
 Live Demo URL:
