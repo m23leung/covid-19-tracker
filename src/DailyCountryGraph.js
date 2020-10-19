@@ -39,6 +39,7 @@ const options = {
                     display: false
                 },
                 ticks: {
+                    min: 0,
                     // Include a dollar sign inside ticks
                     callback: function (value, index, values) {
                         return numeral(value).format("0a");
@@ -49,17 +50,19 @@ const options = {
     }
 }
 
-function LineGraph( {casesType}) {
+function LineGraph( {casesType, country}) {
 
     const [data, setData] = useState({});
     const [lineColor, setLineColor] = useState("red");
     const [borderColor, setBorderColor] = useState();
+    const [errorMsg, setErrorMsg] = useState();
 
-    const getChartData = (data, casesType) => {
+    const getChartData = (data, casesType, country) => {
         const chartData = [];
         let lastDataPoint;
-
-        //debugger;
+        if (!country) return;
+        console.log("COUNTRY: ", country)
+  
         for (let date in data.cases) {
             if (lastDataPoint) {
                 const newDataPoint = {
@@ -74,18 +77,30 @@ function LineGraph( {casesType}) {
         return chartData;
     }
 
-    useEffect(() => {
+    useEffect(() => {   
         
-        let url = 'https://disease.sh/v3/covid-19/historical/all?lastdays=120';
+        if (country === 'Worldwide') return;
 
+        let url = `https://disease.sh/v3/covid-19/historical/${country}?lastdays=120`;
+ 
         const fetchData = async () => (
             
             await fetch(url)
             .then(response => response.json())
             .then(data => {
                 console.log("TIME DATA: ", data);
-      
-                const chartData = getChartData(data, casesType);
+                
+                //debugger;
+                if(!data.timeline) {
+                    setErrorMsg(data.message);
+                    setData();
+                    return;
+                }
+
+                setErrorMsg();
+                data = data.timeline;
+                
+                const chartData = getChartData(data, casesType, country);
 
                 console.log("CHART DATA", chartData);
                 setData(chartData);
@@ -102,12 +117,12 @@ function LineGraph( {casesType}) {
             })
         )
         fetchData();
-    }, [casesType]);
+    }, [country, casesType]);
 
 
     return (
         <div>
-            {data?.length > 0 && (
+            {errorMsg ? errorMsg : ( data?.length > 0 && (
             <Line 
                 options = {options}
                 data={{
@@ -116,7 +131,7 @@ function LineGraph( {casesType}) {
                         borderColor: borderColor,
                         data: data }]
             }} />
-            )}
+            ))}
         </div>
     )
 }

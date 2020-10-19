@@ -5,7 +5,9 @@ import InfoBox from './InfoBox';
 import Map from './Map';
 import Table from './Table';
 import LineGraph from './LineGraph';
+import DailyCountryGraph from './DailyCountryGraph';
 import { sortData, prettyPrintStat } from './util';
+import $ from "jquery";
 import "leaflet/dist/leaflet.css";
 import './css/App.css';
 
@@ -24,61 +26,49 @@ function App() {
   
   const lookup = require('country-code-lookup')
 
+  const getCountryData = async () => {
+  await fetch("https://disease.sh/v3/covid-19/countries")
+    .then((response) => response.json())
+    .then((data) => {
+      const countries = data.map((country) => ({
+        name: country.country, // Ex: United States
+        value: country.countryInfo.iso2 // Ex: USA
+      }));
 
-  // Initial load
-  /*
-  useEffect(() => {
-    const url = "https://disease.sh/v3/covid-19/all" 
+      const sortedData = sortData(data);
+      setTableData(sortedData);
+      setMapCountries(data);
+      setCountries(countries);
 
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-
-    // Set the selected country data from the API
-    setCountryInfo(data);
     })
-  }, []);
-  */
+}
+
+const setDefaultLocation = () => {
+
+  fetch('https://extreme-ip-lookup.com/json/')
+  .then( res => res.json())
+  .then(response => {
+      console.log("Country: ", response.country);
+      
+      if (! response.country)
+        response.country = "Worldwide";
+
+      setCountry(response.country);
+
+      //const countryCode = lookup.byCountry(response.country).iso2;
+      //setCountry(countryCode);
+      updateData(response.country);
+   })
+   .catch((data, status) => {
+      console.log('Request failed');
+   })
+}
 
   // Initialize the country dropdown
   useEffect(() => {
     // async -> send a request, then wait for it. Do something with
     // the returned info
   
-    const getCountryData = async () => {
-      await fetch("https://disease.sh/v3/covid-19/countries")
-        .then((response) => response.json())
-        .then((data) => {
-          const countries = data.map((country) => ({
-            name: country.country, // Ex: United States
-            value: country.countryInfo.iso2 // Ex: USA
-          }));
-
-          const sortedData = sortData(data);
-          setTableData(sortedData);
-          setMapCountries(data);
-          setCountries(countries);
-
-        })
-    }
-
-    const setDefaultLocation = () => {
-
-       fetch('https://extreme-ip-lookup.com/json/')
-       .then( res => res.json())
-       .then(response => {
-           console.log("Country: ", response.country);
-           setCountry(response.country);
-
-           const countryCode = lookup.byCountry(response.country).iso2;
-           setCountry(countryCode);
-           updateData(countryCode);
-        })
-        .catch((data, status) => {
-           console.log('Request failed');
-        })
-    }
-
     // Get Global Country Data
     getCountryData();
 
@@ -87,9 +77,33 @@ function App() {
 
   }, []);
 
+
+useEffect( () => {
+  console.log("APP JS - COUNTRY CHANGED: ", country);
+  
+  if (country === allCountries)
+    return;
+
+  const url = `https://disease.sh/v3/covid-19/countries/${country}`;
+    
+     fetch(url)
+    .then(response => response.json())
+    .then(data => {
+
+      // Set the selected country data from the API
+      setCountryInfo(data);
+      setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
+      setMapZoom(3);
+  })
+  
+
+},[country])
+
+
   const updateData = async (countryCode) => {
-    console.log("SELECTED", countryCode);
-    const url = countryCode === allCountries 
+    console.log("SELECTED countryCode: ", countryCode);
+    console.log(( countryCode === allCountries ) );
+    const url = ( countryCode === allCountries ) 
             ? "https://disease.sh/v3/covid-19/all" 
             : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
     
@@ -110,7 +124,7 @@ function App() {
       }
       else { 
         setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
-        setMapZoom(4);
+        //setMapZoom(4);
       }    
   }
     )}
@@ -118,10 +132,7 @@ function App() {
   const onCountrySelect = async (event) => {
     
     const countryCode = event.target.value;
-  
-    //alert($("Select:MenuItem").text());
     updateData(countryCode);
-
   }
 
   return (
@@ -142,20 +153,24 @@ function App() {
           
               {
                 countries.map(country => (
-                  <MenuItem value={country.value}>{country.name}</MenuItem>
+                  <MenuItem value={country.name}>{country.name}</MenuItem>
                 ))
               }
             </Select>
           </FormControl>
+
           </div> 
           <div className="app__stats">
             <InfoBox 
             isRed
+            country={country}
             active={casesType === "cases"} onClick={ e => setCasesType('cases')} title="Daily Cases" total={prettyPrintStat(countryInfo.cases)} cases={prettyPrintStat(countryInfo.todayCases)} />
             <InfoBox 
+            country={country}
             active={casesType === "recovered"} onClick={ e => setCasesType('recovered')}  title="Daily Recovered" total={prettyPrintStat(countryInfo.recovered)} cases={prettyPrintStat(countryInfo.todayRecovered)} />
             <InfoBox 
             isPurple
+            country={country}
             active={casesType === "deaths"}
              onClick={ e => setCasesType('deaths')}  title="Daily Deaths" total={prettyPrintStat(countryInfo.deaths)} cases={prettyPrintStat(countryInfo.todayDeaths)} />
           </div>  
@@ -163,15 +178,20 @@ function App() {
           <Map casesType={casesType} 
                countries={mapCountries} 
                country={country}
-               center={mapCenter} 
+               center={mapCenter}  
                zoom={mapZoom}/>
 
-            <Card className="app__bottom">
-              <CardContent>
-                <h3 className="app__graphTitle"><strong> {country} - Daily {casesType}</strong></h3>
-                <LineGraph className="app_graph" casesType={casesType} country={country}/>
-              </CardContent>
-            </Card>
+          {country != 'Worldwide' &&
+            <div className="app__bottom">
+              <Card>
+                <CardContent>
+
+                  <h3 className="app__graphTitle"><strong> {country} - Daily {casesType} ( Last 120 Days )</strong></h3>
+                  <DailyCountryGraph className="app__graph" casesType={casesType} country={country}/>
+                </CardContent>
+              </Card>
+            </div>
+            }
 
       </div>
    
@@ -179,12 +199,14 @@ function App() {
         <CardContent>
           <div className="app__information">
             <h3><strong>Live Cases by Country</strong></h3>
-            <Table countries={tableData} />
+            <Table countries={tableData} setCountry={setCountry} />
             <h3 className="app__graphTitle"><strong>Worldwide new {casesType}</strong></h3>
-            <LineGraph className="app_graph" casesType={casesType}/>
+            <LineGraph className="app__graph" casesType={casesType}/>
           </div>
         </CardContent>            
       </Card>
+
+      
     </div>
   );
 }

@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import './css/InfoBox.css';
 import { Card, CardContent, Typography } from '@material-ui/core'
 
-function InfoBox({ title, cases, active, isRed, isPurple, total, ...props }) {
+
+function InfoBox({ title, country, cases, active, isRed, isPurple, total, ...props }) {
   
     return (
         <Card onClick={props.onClick} className={`infoBox ${active && 'infoBox--selected'} ${isRed && 'infoBox--red'}

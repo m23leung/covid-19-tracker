@@ -20,6 +20,20 @@ body {
 
 .app__dropdown {
   background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 0 8px -4px rgba(0,0,0,0.5);
+}
+
+.app__dropdown .MuiCardContent-root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.app__dropdown .MuiFormControl-root .MuiInputBase-root .MuiOutlinedInput-root .MuiInputBase-formControl {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .app__stats {
