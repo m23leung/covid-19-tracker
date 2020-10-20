@@ -7,7 +7,6 @@ import Table from './Table';
 import LineGraph from './LineGraph';
 import DailyCountryGraph from './DailyCountryGraph';
 import { sortData, prettyPrintStat } from './util';
-import $ from "jquery";
 import "leaflet/dist/leaflet.css";
 import './css/App.css';
 
@@ -89,7 +88,7 @@ useEffect( () => {
      fetch(url)
     .then(response => response.json())
     .then(data => {
-
+      debugger;
       // Set the selected country data from the API
       setCountryInfo(data);
       setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
@@ -142,6 +141,7 @@ useEffect( () => {
 
           <h1>COVID-19 TRACKER</h1>
 
+
           <FormControl className="app__dropdown">
             <Select
               variant="outlined"
@@ -184,8 +184,7 @@ useEffect( () => {
           {country != 'Worldwide' &&
             <div className="app__bottom">
               <Card>
-                <CardContent>
-
+                <CardContent>                 
                   <h3 className="app__graphTitle"><strong> {country} - Daily {casesType} ( Last 120 Days )</strong></h3>
                   <DailyCountryGraph className="app__graph" casesType={casesType} country={country}/>
                 </CardContent>
